@@ -1,4 +1,5 @@
 <?php
+
 namespace ANet;
 
 use Illuminate\Support\Facades\Cache;
@@ -11,7 +12,7 @@ class ANetMock
 
     /**
      * It will set charge mock response for testing
-     * @param TransactionResponseType $mockResponse
+     *
      * @return bool
      */
     public function setChargeResponse(TransactionResponseType $mockResponse)
@@ -19,12 +20,13 @@ class ANetMock
         $mocks = $this->getAllMocks();
         $mocks['PaymentProfileCharge'] = $mockResponse;
         $this->setMock($mocks);
+
         return true;
     }
 
     /**
      * It will set customer profile mock response for testing
-     * @param $mockResponse
+     *
      * @return bool
      */
     public function setCustomerProfileResponse($mockResponse)
@@ -32,6 +34,7 @@ class ANetMock
         $mocks = $this->getAllMocks();
         $mocks['CustomerProfile'] = $mockResponse;
         $this->setMock($mocks);
+
         return true;
     }
 
@@ -43,9 +46,6 @@ class ANetMock
         return Cache::get(self::MOCK_CACHE_KEY);
     }
 
-    /**
-     * @param $mocks
-     */
     private function setMock($mocks)
     {
         Cache::put(self::MOCK_CACHE_KEY, $mocks);
@@ -53,12 +53,13 @@ class ANetMock
 
     /**
      * It will return mocked response
-     * @param $class
+     *
      * @return array
      */
     public function get($class)
     {
         $mapMocks = $this->getAllMocks();
+
         return $mapMocks[$class] ?? '';
     }
 }

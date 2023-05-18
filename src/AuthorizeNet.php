@@ -1,4 +1,5 @@
 <?php
+
 namespace ANet;
 
 use Exception;
@@ -7,7 +8,7 @@ use net\authorize\api\contract\v1 as AnetAPI;
 
 abstract class AuthorizeNet
 {
-    /** @var  AnetAPI\MerchantAuthenticationType */
+    /** @var AnetAPI\MerchantAuthenticationType */
     protected $merchantAuthentication;
 
     /** @var mixed */
@@ -33,26 +34,29 @@ abstract class AuthorizeNet
     /**
      * It will setup and get merchant authentication keys
      */
-    public function getMerchantAuthentication() : AnetAPI\MerchantAuthenticationType
+    public function getMerchantAuthentication(): AnetAPI\MerchantAuthenticationType
     {
         $this->merchantAuthentication = new AnetAPI\MerchantAuthenticationType();
         $this->merchantAuthentication->setName($this->_getLoginID());
         $this->merchantAuthentication->setTransactionKey($this->_getTransactionKey());
+
         return $this->merchantAuthentication;
     }
 
-    private function _getLoginID() {
+    private function _getLoginID()
+    {
         $loginId = config('authorizenet.login_id');
-        if (!$loginId) {
+        if (! $loginId) {
             throw new Exception('Please provide Login ID in .env file. Which you can get from authorize.net');
         }
 
         return $loginId;
     }
 
-    private function _getTransactionKey() {
+    private function _getTransactionKey()
+    {
         $transactionKey = config('authorizenet.transaction_key');
-        if (!$transactionKey) {
+        if (! $transactionKey) {
             throw new Exception('Please provide transaction key in .env file. Which you can get from authorize.net');
         }
 
@@ -60,12 +64,12 @@ abstract class AuthorizeNet
     }
 
     /**
-     * @param $requestObject
      * @return $this
      */
     public function setRequest($requestObject)
     {
         $this->request = $requestObject;
+
         return $this;
     }
 
@@ -78,17 +82,19 @@ abstract class AuthorizeNet
     }
 
     /**
-     * @param string $refId
+     * @param  string  $refId
      * return $this
      */
     public function setRefId(string $refId)
     {
         $this->refId = $refId;
+
         return $this;
     }
 
     /**
      * it will return refId if not provided then time
+     *
      * @return string
      */
     public function getRefId()
@@ -97,8 +103,6 @@ abstract class AuthorizeNet
     }
 
     /**
-     * @param string $type
-     * @param int $amount
      * @return $this
      */
     public function setTransactionType(string $type, int $amount)
@@ -106,6 +110,7 @@ abstract class AuthorizeNet
         $this->transactionType = new AnetAPI\TransactionRequestType;
         $this->transactionType->setTransactionType($type);
         $this->transactionType->setAmount($this->convertCentsToDollar($amount));
+
         return $this;
     }
 
@@ -118,7 +123,6 @@ abstract class AuthorizeNet
     }
 
     /**
-     * @param int $cents
      * @return string
      */
     public function convertCentsToDollar(int $cents)
@@ -127,7 +131,6 @@ abstract class AuthorizeNet
     }
 
     /**
-     * @param $dollars
      * @return string
      */
     public function convertDollarsToCents($dollars)
@@ -136,12 +139,12 @@ abstract class AuthorizeNet
     }
 
     /**
-     * @param $controller
      * @return $this
      */
     public function setController($controller)
     {
         $this->controller = $controller;
+
         return $this;
     }
 
@@ -154,7 +157,6 @@ abstract class AuthorizeNet
     }
 
     /**
-     * @param $controller
      * @return mixed
      */
     public function execute($controller)

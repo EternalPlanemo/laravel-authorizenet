@@ -3,8 +3,8 @@
 namespace ANet\Tests;
 
 use ANet\Transactions\Batch;
-use Exception;
 use App\Models\User;
+use Exception;
 use Illuminate\Foundation\Testing\DatabaseMigrations;
 use net\authorize\api\contract\v1\BatchStatisticType;
 
@@ -17,6 +17,7 @@ class BatchTest extends BaseTestCase
         if (is_null($user)) {
             $user = User::factory()->create();
         }
+
         return new Batch($user);
     }
 

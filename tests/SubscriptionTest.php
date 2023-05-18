@@ -1,6 +1,7 @@
-<?php namespace ANet\Tests;
+<?php
 
-use ANet\Subscription;
+namespace ANet\Tests;
+
 use App\Models\User;
 use Illuminate\Foundation\Testing\DatabaseMigrations;
 use Illuminate\Foundation\Testing\WithFaker;
@@ -14,7 +15,7 @@ class SubscriptionTest extends BaseTestCase
         $user = User::factory()->create();
         $response = $user->anet()->subs()
             ->create([
-                'name'  => 'Sample Subscription',
+                'name' => 'Sample Subscription',
                 'startDate' => now()->addDay(2),
                 'totalOccurrences' => 12,
                 'trialOccurrences' => 1,
@@ -27,7 +28,7 @@ class SubscriptionTest extends BaseTestCase
                 'invoiceNumber' => rand(02223, 123213),
                 'subscriptionDescription' => $this->faker->words(10, true),
                 'customerFirstName' => $this->faker->firstName,
-                'customerLastName' => $this->faker->lastName
+                'customerLastName' => $this->faker->lastName,
             ]);
         $this->assertNotNull($response->getSubscriptionId());
     }
@@ -66,7 +67,7 @@ class SubscriptionTest extends BaseTestCase
 
         $response = $user->anet()->subs()->update($subscriptionId, [
             'cardNumber' => 4111111111111111,
-            'cardExpiry' => '2022-12'
+            'cardExpiry' => '2022-12',
         ]);
         $this->assertEquals('Ok', $response->getMessages()->getResultCode());
     }

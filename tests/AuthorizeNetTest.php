@@ -3,8 +3,6 @@
 namespace ANet\Tests;
 
 use ANet\AuthorizeNet;
-use ANet\PaymentProfile\PaymentProfile;
-use ANet\Tests\BaseTestCase;
 use App\Models\User;
 use net\authorize\api\constants\ANetEnvironment;
 use net\authorize\api\contract\v1\TransactionRequestType;
@@ -16,7 +14,7 @@ class AuthorizeNetTest extends BaseTestCase
     /** @var AuthorizeNet */
     protected $authorizenet;
 
-    protected function setUp():void
+    protected function setUp(): void
     {
         parent::setUp();
         $user = new User();
@@ -81,7 +79,7 @@ class AuthorizeNetTest extends BaseTestCase
     {
         $sandboxMock = new stdClass;
         $sandboxMock->sandbox = true;
-        $prodMock  = new stdClass;
+        $prodMock = new stdClass;
         $prodMock->prod = true;
         $controller = \Mockery::mock(GetHostedPaymentPageController::class)
             ->shouldReceive('executeWithApiResponse')
@@ -91,7 +89,6 @@ class AuthorizeNetTest extends BaseTestCase
 
         $this->assertEquals('sandbox', $this->authorizenet->execute($controller));
     }
-
 
     public function test_if_Anet_env_is_returned_sandbox_for_local_and_testing()
     {
@@ -112,5 +109,4 @@ class AuthorizeNetTest extends BaseTestCase
         $anetEnv = $this->authorizenet->getANetEnv();
         $this->assertEquals(ANetEnvironment::PRODUCTION, $anetEnv);
     }
-
 }

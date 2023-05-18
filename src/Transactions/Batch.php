@@ -16,10 +16,10 @@ class Batch extends AuthorizeNet
 {
     /**
      * It will return all settled batches
-     * @param string $firstSettlementDate
-     * @param string $lastSettlementDate
-     * @param bool $includeStatistics
+     *
+     * @param  bool  $includeStatistics
      * @return array|null
+     *
      * @throws Exception
      */
     public function getSettledBatchList(string $firstSettlementDate, string $lastSettlementDate, $includeStatistics = true)
@@ -32,7 +32,7 @@ class Batch extends AuthorizeNet
         $request->setFirstSettlementDate(Carbon::parse($firstSettlementDate)->toDateTime());
         $request->setLastSettlementDate(Carbon::parse($lastSettlementDate)->toDateTime());
 
-        $controller = new AnetController\GetSettledBatchListController ($request);
+        $controller = new AnetController\GetSettledBatchListController($request);
 
         $response = $this->execute($controller);
 
@@ -40,25 +40,25 @@ class Batch extends AuthorizeNet
             return [];
         }
 
-        if ($response != null && $response->getMessages()->getResultCode() == "Ok") {
+        if ($response != null && $response->getMessages()->getResultCode() == 'Ok') {
             return array_map(function ($batch) {
                 $batch = $this->normalizeBatchToArray($batch);
-//                $stats = $this->normalizeBatchStatistics($batch->getStatistics());
+                //                $stats = $this->normalizeBatchStatistics($batch->getStatistics());
                 $batch['statistics'] = $batch->getStatistics();
+
                 return $batch;
             }, $response->getBatchList());
         }
 
         return [
             'error' => 'Failed to get batch list',
-            'response' => $response
+            'response' => $response,
         ];
     }
 
     /**
      * It validates if given values are what it should be
-     * @param $firstDate
-     * @param $secondDate
+     *
      * @throws Exception
      */
     public function validate($firstDate, $secondDate): void
@@ -67,13 +67,13 @@ class Batch extends AuthorizeNet
         $secondDate = Carbon::parse($secondDate);
         $days = $firstDate->diffInDays($secondDate);
         if ($days > 31) {
-            throw new Exception('Settlement Date cannot be larger than 31 Days. Given dates ' . $firstDate->locale() . ' to ' . $secondDate->locale());
+            throw new Exception('Settlement Date cannot be larger than 31 Days. Given dates '.$firstDate->locale().' to '.$secondDate->locale());
         }
     }
 
     /**
-     * @param $batch
      * @return array
+     *
      * @throws ReflectionException
      */
     public function normalizeBatchToArray($batch)
@@ -91,12 +91,14 @@ class Batch extends AuthorizeNet
                 }
             }
         }
+
         return $mapBatch;
     }
 
     /**
      * It will normalize given batch statistics and convert to array
-     * @param BatchStatisticType $batchStats
+     *
+     * @param  BatchStatisticType  $batchStats
      */
     public function normalizeBatchStatistics($batchStats)
     {
@@ -115,6 +117,7 @@ class Batch extends AuthorizeNet
                 }
             }
         }
+
         return $mapStats;
     }
 }

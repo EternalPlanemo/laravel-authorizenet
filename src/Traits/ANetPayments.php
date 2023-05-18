@@ -1,4 +1,5 @@
 <?php
+
 namespace ANet\Traits;
 
 use ANet\ANet;

@@ -1,8 +1,8 @@
 <?php
 
-use Illuminate\Support\Facades\Schema;
-use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
 
 class CreateUserPaymentProfilesTable extends Migration
 {
@@ -21,7 +21,7 @@ class CreateUserPaymentProfilesTable extends Migration
             $table->string('expiry_date');
             $table->enum('type', [
                 'bank',
-                'card'
+                'card',
             ]);
             $table->string('brand');
             $table->timestamps();

@@ -70,7 +70,6 @@ class TransactionsTest extends BaseTestCase
     {
         $this->markTestSkipped('Idea of this class has been skipped');
 
-
         $transId = 123123;
         $response = new CreateTransactionResponse();
         $transactionResponse = new TransactionResponseType();

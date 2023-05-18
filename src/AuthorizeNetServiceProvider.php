@@ -1,4 +1,6 @@
-<?php namespace ANet;
+<?php
+
+namespace ANet;
 
 use Illuminate\Support\ServiceProvider;
 
@@ -23,6 +25,7 @@ class AuthorizeNetServiceProvider extends ServiceProvider
 
     /**
      * It will setup configuration file
+     *
      * @return void
      */
     public function setupConfig()
@@ -30,7 +33,7 @@ class AuthorizeNetServiceProvider extends ServiceProvider
         $configLocation = __DIR__.'/Config/authorizenet.php';
 
         $this->publishes([
-            $configLocation => config_path('authorizenet.php')
+            $configLocation => config_path('authorizenet.php'),
         ], 'authorizenet');
 
         $this->mergeConfigFrom(
@@ -43,8 +46,6 @@ class AuthorizeNetServiceProvider extends ServiceProvider
      * @return void
      */
     public function register()
-    {}
-
-
-
+    {
+    }
 }

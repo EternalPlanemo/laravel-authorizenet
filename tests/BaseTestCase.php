@@ -3,7 +3,6 @@
 namespace ANet\Tests;
 
 use App\Models\User;
-use Illuminate\Foundation\Testing\DatabaseMigrations;
 use Tests\TestCase;
 
 abstract class BaseTestCase extends TestCase
@@ -24,7 +23,7 @@ abstract class BaseTestCase extends TestCase
 
     public function generateCustomerId($user = null)
     {
-        if(! $user ) {
+        if (! $user) {
             $user = $this->getFakeUser();
         }
         $user->anet()->createCustomerProfile();
@@ -32,21 +31,22 @@ abstract class BaseTestCase extends TestCase
         return $user;
     }
 
-    public function getCustomerWithPaymentProfile($user = null) {
-        if( is_null($user) ) {
+    public function getCustomerWithPaymentProfile($user = null)
+    {
+        if (is_null($user)) {
             $user = $this->generateCustomerId();
         }
 
         $opaqueData = $this->getOpaqueData();
-        $source     = [
-            'type'      => 'card',
-            'last_4'    => '1111',
-            'brand'     => 'visa'
+        $source = [
+            'type' => 'card',
+            'last_4' => '1111',
+            'brand' => 'visa',
         ];
 
         $user->anet()->createPaymentProfile([
             'dataValue' => $opaqueData->dataValue,
-            'dataDescriptor' => $opaqueData->dataDescriptor
+            'dataDescriptor' => $opaqueData->dataDescriptor,
         ], $source);
 
         return $user;
@@ -72,25 +72,23 @@ abstract class BaseTestCase extends TestCase
                     }
                 }
             }';
-        $endpoint = "https://apitest.authorize.net/xml/v1/request.api";
+        $endpoint = 'https://apitest.authorize.net/xml/v1/request.api';
 
-
-        $result = file_get_contents($endpoint, null, stream_context_create(array(
-            'http' => array(
+        $result = file_get_contents($endpoint, null, stream_context_create([
+            'http' => [
                 'method' => 'POST',
-                'header' => 'Content-Type: application/json' . "\r\n"
-                    . 'Content-Length: ' . strlen($payload) . "\r\n",
+                'header' => 'Content-Type: application/json'."\r\n"
+                    .'Content-Length: '.strlen($payload)."\r\n",
                 'content' => $payload,
-            ),
-        )));
-//        if(get_magic_quotes_gpc()){ Deprecated in php7.4
-//            $result = stripslashes($result);
-//        }
+            ],
+        ]));
+        //        if(get_magic_quotes_gpc()){ Deprecated in php7.4
+        //            $result = stripslashes($result);
+        //        }
 
         $result = utf8_decode($result);
-        $out = json_decode(str_replace("?", "", $result));
-        return  $out->opaqueData;
+        $out = json_decode(str_replace('?', '', $result));
+
+        return $out->opaqueData;
     }
-
-
 }

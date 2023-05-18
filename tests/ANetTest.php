@@ -7,9 +7,6 @@ use ANet\Subscription;
 use ANet\Transactions\Card;
 use App\Models\User;
 use Illuminate\Foundation\Testing\DatabaseMigrations;
-use net\authorize\api\contract\v1\CreateCustomerProfileResponse;
-use net\authorize\api\contract\v1\MessagesType;
-use net\authorize\api\contract\v1\TransactionResponseType;
 
 class ANetTest extends BaseTestCase
 {
@@ -30,7 +27,7 @@ class ANetTest extends BaseTestCase
         $this->assertNotNull($customerProfile->getCustomerProfileId());
         $this->assertDatabaseHas('user_gateway_profiles', [
             'user_id' => $user->id,
-            'profile_id' => $customerProfile->getCustomerProfileId()
+            'profile_id' => $customerProfile->getCustomerProfileId(),
         ]);
     }
 
@@ -50,15 +47,15 @@ class ANetTest extends BaseTestCase
 
         $opaqueData = $this->getOpaqueData();
 
-        $source     = [
-            'type'      => 'card',
-            'last_4'    => '1111',
-            'brand'     => 'visa'
+        $source = [
+            'type' => 'card',
+            'last_4' => '1111',
+            'brand' => 'visa',
         ];
 
         $paymentProfile = $user->anet()->createPaymentProfile([
             'dataValue' => $opaqueData->dataValue,
-            'dataDescriptor' => $opaqueData->dataDescriptor
+            'dataDescriptor' => $opaqueData->dataDescriptor,
         ], $source);
 
         $this->assertNotNull($paymentProfile->getCustomerProfileId());
@@ -66,7 +63,7 @@ class ANetTest extends BaseTestCase
 
         $this->assertDatabaseHas('user_payment_profiles', [
             'user_id' => $user->id,
-            'payment_profile_id' =>$paymentProfile->getCustomerPaymentProfileId()
+            'payment_profile_id' => $paymentProfile->getCustomerPaymentProfileId(),
         ]);
     }
 
@@ -106,11 +103,11 @@ class ANetTest extends BaseTestCase
         $user = $this->getCustomerWithPaymentProfile();
 
         \DB::table('user_payment_profiles')->insert([
-            'user_id'               => $user->id,
-            'payment_profile_id'    => '123123123',
-            'last_4'                => '1111',
-            'brand'                 => 'Visa',
-            'type'                  => 'card'
+            'user_id' => $user->id,
+            'payment_profile_id' => '123123123',
+            'last_4' => '1111',
+            'brand' => 'Visa',
+            'type' => 'card',
         ]);
 
         $paymentCards = $user->anet()->getPaymentMethods();
@@ -123,11 +120,11 @@ class ANetTest extends BaseTestCase
         $user = $this->getCustomerWithPaymentProfile();
 
         \DB::table('user_payment_profiles')->insert([
-            'user_id'               => $user->id,
-            'payment_profile_id'    => '123123123',
-            'last_4'                => '1111',
-            'brand'                 => 'Visa',
-            'type'                  => 'card'
+            'user_id' => $user->id,
+            'payment_profile_id' => '123123123',
+            'last_4' => '1111',
+            'brand' => 'Visa',
+            'type' => 'card',
         ]);
 
         $paymentCards = $user->anet()->getPaymentCardProfiles();
@@ -140,11 +137,11 @@ class ANetTest extends BaseTestCase
         $user = $this->getCustomerWithPaymentProfile();
 
         \DB::table('user_payment_profiles')->insert([
-            'user_id'               => $user->id,
-            'payment_profile_id'    => '123123123',
-            'last_4'                => '1111',
-            'brand'                 => 'Visa',
-            'type'                  => 'bank'
+            'user_id' => $user->id,
+            'payment_profile_id' => '123123123',
+            'last_4' => '1111',
+            'brand' => 'Visa',
+            'type' => 'bank',
         ]);
 
         $paymentCards = $user->anet()->getPaymentBankProfiles();

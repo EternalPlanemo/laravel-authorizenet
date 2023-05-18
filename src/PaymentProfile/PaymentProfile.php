@@ -1,4 +1,5 @@
 <?php
+
 namespace ANet\PaymentProfile;
 
 use ANet\AuthorizeNet;
@@ -9,7 +10,7 @@ class PaymentProfile extends AuthorizeNet
 {
     public function create($opaqueData, array $source)
     {
-     	$merchantKeys = $this->getMerchantAuthentication();
+        $merchantKeys = $this->getMerchantAuthentication();
 
         $opaqueDataType = new AnetAPI\OpaqueDataType();
         $opaqueDataType->setDataDescriptor($opaqueData['dataDescriptor']);
@@ -40,30 +41,29 @@ class PaymentProfile extends AuthorizeNet
         $controller = new AnetControllers\CreateCustomerPaymentProfileController($paymentProfileRequest);
         $response = $this->execute($controller);
 
-        if(!is_null($response->getCustomerPaymentProfileId()))  {
+        if (! is_null($response->getCustomerPaymentProfileId())) {
             $this->storeInDatabase($response, $source);
         }
 
-	    return $response;
+        return $response;
     }
 
     /**
-     * @param $response
-     * @param array $source
+     * @param  array  $source
      * @return mixed
      */
     public function storeInDatabase($response, $source)
     {
-     	return \DB::table('user_payment_profiles')->updateOrInsert(
+        return \DB::table('user_payment_profiles')->updateOrInsert(
             [
-                'user_id'               => $this->user->id,
-                'payment_profile_id'    => $response->getCustomerPaymentProfileId(),
+                'user_id' => $this->user->id,
+                'payment_profile_id' => $response->getCustomerPaymentProfileId(),
             ],
             [
-                'last_4'                => $source['last_4'],
-                'expiry_date'           => $source['expiry_date'],
-                'brand'                 => $source['brand'],
-                'type'                  => $source['type']
+                'last_4' => $source['last_4'],
+                'expiry_date' => $source['expiry_date'],
+                'brand' => $source['brand'],
+                'type' => $source['type'],
             ],
         );
     }

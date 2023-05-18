@@ -1,4 +1,6 @@
-<?php namespace ANet;
+<?php
+
+namespace ANet;
 
 use DateTime;
 use net\authorize\api\contract\v1 as AnetAPI;
@@ -6,7 +8,6 @@ use net\authorize\api\controller as AnetController;
 
 class Subscription extends AuthorizeNet
 {
-
     public function create(array $data)
     {
         // Subscription Type Info
@@ -22,7 +23,6 @@ class Subscription extends AuthorizeNet
         $paymentSchedule->setStartDate(new DateTime($data['startDate']));
         $paymentSchedule->setTotalOccurrences($data['totalOccurrences']);
         $paymentSchedule->setTrialOccurrences($data['trialOccurrences']);
-
 
         $creditCard = new AnetAPI\CreditCardType();
         $creditCard->setCardNumber($data['cardNumber']);
@@ -53,6 +53,7 @@ class Subscription extends AuthorizeNet
         $request->setRefId($this->getRefId());
         $request->setSubscription($subscription);
         $controller = new AnetController\ARBCreateSubscriptionController($request);
+
         return $this->execute($controller);
     }
 
@@ -69,11 +70,10 @@ class Subscription extends AuthorizeNet
         $request = new AnetAPI\ARBGetSubscriptionListRequest();
         $request->setMerchantAuthentication($this->getMerchantAuthentication());
         $request->setRefId($this->getRefId());
-        $request->setSearchType($options['searchType'] ?? "subscriptionActive");
+        $request->setSearchType($options['searchType'] ?? 'subscriptionActive');
 
         $request->setSorting($sorting);
         $request->setPaging($paging);
-
 
         $controller = new AnetController\ARBGetSubscriptionListController($request);
 
@@ -88,6 +88,7 @@ class Subscription extends AuthorizeNet
         $request->setSubscriptionId($subscriptionId);
 
         $controller = new AnetController\ARBGetSubscriptionStatusController($request);
+
         return $this->execute($controller);
     }
 
@@ -102,6 +103,7 @@ class Subscription extends AuthorizeNet
 
         // Controller
         $controller = new AnetController\ARBGetSubscriptionController($request);
+
         return $this->execute($controller);
     }
 
@@ -119,7 +121,6 @@ class Subscription extends AuthorizeNet
 
         $subscription->setPayment($payment);
 
-
         $request = new AnetAPI\ARBUpdateSubscriptionRequest();
         $request->setMerchantAuthentication($this->getMerchantAuthentication());
         $request->setRefId($this->getRefId());
@@ -127,6 +128,7 @@ class Subscription extends AuthorizeNet
         $request->setSubscription($subscription);
 
         $controller = new AnetController\ARBUpdateSubscriptionController($request);
+
         return $this->execute($controller);
     }
 
@@ -138,6 +140,7 @@ class Subscription extends AuthorizeNet
         $request->setSubscriptionId($subscriptionId);
 
         $controller = new AnetController\ARBCancelSubscriptionController($request);
+
         return $this->execute($controller);
     }
 }

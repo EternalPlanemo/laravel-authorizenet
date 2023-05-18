@@ -20,13 +20,13 @@ class Transaction extends AuthorizeNet
     /** @var string */
     public $refId;
 
-    /** @var integer */
+    /** @var int */
     public $responseCode;
 
     /**
      * Transaction constructor.
-     * @param $user
-     * @param CreateTransactionResponse $transaction  0 => "getTransactionResponse"
+     *
+     * @param  CreateTransactionResponse  $transaction  0 => "getTransactionResponse"
     1 => "setTransactionResponse"
     2 => "getProfileResponse"
     3 => "setProfileResponse"
@@ -53,16 +53,19 @@ class Transaction extends AuthorizeNet
 
     /**
      * It will check if the transaction is approved
+     *
      * @return bool
      */
     public function isApproved()
     {
         $responseText = $this->transaction->getTransactionResponse()->getMessages()[0]->getDescription();
+
         return $responseText === 'This transaction has been approved.';
     }
 
     /**
      * It will check if transaction request was successfully reached and handled. It does not indicate if the charge was successful or failed
+     *
      * @return bool
      */
     public function isRequestSuccessful()
@@ -72,6 +75,7 @@ class Transaction extends AuthorizeNet
 
     /**
      * It will return transaction ID for selected transaction
+     *
      * @return int
      */
     public function getId()
@@ -81,8 +85,9 @@ class Transaction extends AuthorizeNet
 
     /**
      * It will return all transactions for given user from authorize.net api
-     * @param int $batchId
+     *
      * @return Collection
+     *
      * @throws Exception
      */
     public function get(int $batchId)
@@ -97,15 +102,16 @@ class Transaction extends AuthorizeNet
         //Retrieving transaction list for the given Batch Id
         $response = $this->execute($controller);
 
-        if (($response != null) && ($response->getMessages()->getResultCode() == "Ok")) {
+        if (($response != null) && ($response->getMessages()->getResultCode() == 'Ok')) {
             if ($response->getTransactions() == null) {
                 return collect();
             }
+
             return collect($response->getTransactions());
         }
 
         $msg = $response->getMessages()->getMessage[0];
-        throw new Exception('Code: ' . $msg->getCode() . '. Message: ' . $msg->getText());
+        throw new Exception('Code: '.$msg->getCode().'. Message: '.$msg->getText());
     }
 
     /**
@@ -118,7 +124,6 @@ class Transaction extends AuthorizeNet
         if (method_exists($response, $method)) {
             return $response->$method($arg);
         }
-        throw new BadMethodCallException('Method: ' . $method . ' Does not exists');
+        throw new BadMethodCallException('Method: '.$method.' Does not exists');
     }
-
 }

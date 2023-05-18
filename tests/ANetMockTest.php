@@ -1,4 +1,5 @@
 <?php
+
 namespace ANet\Tests;
 
 use ANet\ANetMock;

@@ -1,9 +1,10 @@
-<?php namespace ANet\Tests\Transactions;
+<?php
+
+namespace ANet\Tests\Transactions;
 
 use ANet\Contracts\CardInterface;
 use ANet\Tests\BaseTestCase;
 use ANet\Transactions\Card;
-use App\Models\User;
 use Illuminate\Foundation\Testing\DatabaseMigrations;
 use net\authorize\api\contract\v1\CreateTransactionResponse;
 
@@ -14,13 +15,13 @@ class CardTest extends BaseTestCase
     /** @var Card */
     protected $card;
 
-    protected function setUp() : void
+    protected function setUp(): void
     {
         parent::setUp();
         $this->card = $this->_getCreditCardInstance();
     }
 
-    private function _getCreditCardInstance($user = []) : Card
+    private function _getCreditCardInstance($user = []): Card
     {
         return new Card($user);
     }
@@ -102,5 +103,4 @@ class CardTest extends BaseTestCase
 
         $this->assertInstanceOf(CreateTransactionResponse::class, $response);
     }
-
 }

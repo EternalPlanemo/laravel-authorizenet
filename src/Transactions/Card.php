@@ -1,52 +1,59 @@
-<?php namespace ANet\Transactions;
+<?php
 
-use net\authorize\api\controller as AnetController;
-use net\authorize\api\contract\v1 as AnetAPI;
-use ANet\Contracts\CardInterface;
+namespace ANet\Transactions;
+
 use ANet\AuthorizeNet;
+use ANet\Contracts\CardInterface;
 use Carbon\Carbon;
+use net\authorize\api\contract\v1 as AnetAPI;
+use net\authorize\api\controller as AnetController;
 
 class Card extends AuthorizeNet implements CardInterface
 {
     /** @var array */
     private $_data = [
-        'nameOnCard'    => null,
-        'cardNumber'    => null,
-        'expMonth'      => null,
-        'expYear'       => null,
-        'amount'        => null, // in cents
-        'brand'         => null, // visa, master, etc.
-        'type'          => null, // credit, debit, gift, etc.
-        'cvv'           => null,
+        'nameOnCard' => null,
+        'cardNumber' => null,
+        'expMonth' => null,
+        'expYear' => null,
+        'amount' => null, // in cents
+        'brand' => null, // visa, master, etc.
+        'type' => null, // credit, debit, gift, etc.
+        'cvv' => null,
     ];
 
     public function setNumbers(int $cardNumbers): CardInterface
     {
         $this->_data['cardNumber'] = $cardNumbers;
+
         return $this;
     }
 
     public function setCVV(int $cvvNumbers): CardInterface
     {
         $this->_data['cvv'] = $cvvNumbers;
+
         return $this;
     }
 
     public function setNameOnCard(string $name): CardInterface
     {
         $this->_data['nameOnCard'] = $name;
+
         return $this;
     }
 
     public function setAmountInCents(int $cents): CardInterface
     {
         $this->_data['amount'] = $cents;
+
         return $this;
     }
 
     public function setAmountInDollars(float $amount): CardInterface
     {
         $this->_data['amount'] = $amount / 100; // normalizing to store cents
+
         return $this;
     }
 
@@ -90,13 +97,13 @@ class Card extends AuthorizeNet implements CardInterface
 
         // Set the customer's identifying information
         $customerData = new AnetAPI\CustomerDataType();
-        $customerData->setType("individual");
+        $customerData->setType('individual');
         $customerData->setId($this->user->id);
         $customerData->setEmail($this->user->email);
 
         // Create a TransactionRequestType object and add the previous objects to it
         $transactionRequestType = new AnetAPI\TransactionRequestType();
-        $transactionRequestType->setTransactionType("authCaptureTransaction");
+        $transactionRequestType->setTransactionType('authCaptureTransaction');
         $transactionRequestType->setAmount($this->getAmountInDollars());
         $transactionRequestType->setPayment($paymentOne);
         $transactionRequestType->setCustomer($customerData);
@@ -109,6 +116,7 @@ class Card extends AuthorizeNet implements CardInterface
 
         // Create the controller and get the response
         $controller = new AnetController\CreateTransactionController($request);
+
         return $this->execute($controller);
     }
 
@@ -119,6 +127,7 @@ class Card extends AuthorizeNet implements CardInterface
             $intMonth = Carbon::parse('january')->month;
         }
         $this->_data['expMonth'] = $intMonth;
+
         return $this;
     }
 
@@ -129,18 +138,21 @@ class Card extends AuthorizeNet implements CardInterface
             $intYear = '20'.$year; // TODO: i know it should be dynamic but I guess I've at least 50 more years to update it
         }
         $this->_data['expYear'] = $intYear;
+
         return $this;
     }
 
     public function setType(string $type = 'Credit'): CardInterface
     {
         $this->_data['type'] = $type;
+
         return $this;
     }
 
     public function setBrand(string $brandName): CardInterface
     {
         $this->_data['brand'] = $brandName;
+
         return $this;
     }
 
