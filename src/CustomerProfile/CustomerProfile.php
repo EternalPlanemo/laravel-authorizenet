@@ -2,6 +2,8 @@
 namespace ANet\CustomerProfile;
 
 use ANet\AuthorizeNet;
+use ANet\Exceptions\ANetApiException;
+use ANet\Exceptions\ANetLogicException;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use net\authorize\api\contract\v1 as AnetAPI;
@@ -41,9 +43,7 @@ class CustomerProfile extends AuthorizeNet {
     {
         if( is_null($response->getCustomerProfileId() )) {
             if (app()->environment() == 'local') {
-                dd(
-                    $response->getMessages()->getMessage()[0]->getText()
-                );
+                throw new ANetApiException($response);
             }
 
             Log::debug($response->getMessages()->getMessage()[0]->getText());
@@ -60,10 +60,11 @@ class CustomerProfile extends AuthorizeNet {
                 $profile_id = $matches['profileId'] ?? '';
 
                 $response = (object)['status'=>true, 'profile_id'=>$profile_id];
+
                 return $response;
             }
 
-            throw new \Exception('Failed, To create customer profile.');
+            throw new ANetLogicException('Failed, To create customer profile.');
         }
 
         return $response;
