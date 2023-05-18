@@ -1,5 +1,5 @@
 {
-    "name": "titanium-6/laravel-authorizenet",
+    "name": "eternalplanemo/laravel-authorizenet",
     "description": "This package allows laravel application to use authorizenet api easily.",
     "type": "library",
     "require": {
