@@ -3,6 +3,7 @@
 namespace ANet;
 
 use ANet\CustomerProfile\CustomerProfile;
+use ANet\Exceptions\ANetApiException;
 use ANet\PaymentProfile\PaymentProfile;
 use ANet\PaymentProfile\PaymentProfileCharge;
 use ANet\PaymentProfile\PaymentProfileRefund;
@@ -40,6 +41,16 @@ class ANet
     public function createCustomerProfile()
     {
         return (new CustomerProfile($this->user))->create();
+    }
+
+    /**
+     * Returns a collection of all customer payment profiles
+     *
+     * @throws ANetApiException
+     */
+    public function getCustomerProfile(): Collection
+    {
+        return (new CustomerProfile($this->user))->get();
     }
 
     /**

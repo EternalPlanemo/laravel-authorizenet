@@ -5,6 +5,7 @@ namespace ANet\CustomerProfile;
 use ANet\AuthorizeNet;
 use ANet\Exceptions\ANetApiException;
 use ANet\Exceptions\ANetLogicException;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Log;
 use net\authorize\api\contract\v1 as AnetAPI;
 use net\authorize\api\controller as AnetController;
@@ -35,6 +36,28 @@ class CustomerProfile extends AuthorizeNet
         }
 
         return $response;
+    }
+
+    /**
+     * @throws ANetApiException
+     */
+    public function get(): Collection
+    {
+        $customerId = $this->getCustomerProfileId();
+        $request = new AnetAPI\GetCustomerProfileRequest();
+        $request->setMerchantAuthentication($this->getMerchantAuthentication());
+        $request->setCustomerProfileId($customerId);
+        $controller = new AnetController\GetCustomerProfileController($request);
+        $response = $controller->executeWithApiResponse($this->getANetEnv());
+
+        if (($response != null) && ($response->getMessages()->getResultCode() == 'Ok')) {
+            $profileSelected = $response->getProfile();
+            $paymentProfiles = collect($profileSelected->getPaymentProfiles());
+
+            return $paymentProfiles;
+        }
+
+        throw new ANetApiException($response);
     }
 
     /**
