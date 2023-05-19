@@ -3,8 +3,11 @@
 namespace ANet\PaymentProfile;
 
 use ANet\AuthorizeNet;
+use DB;
+use net\authorize\api\contract\v1\ANetApiResponseType;
 use net\authorize\api\contract\v1 as AnetAPI;
 use net\authorize\api\controller as AnetControllers;
+use Throwable;
 
 class PaymentProfile extends AuthorizeNet
 {
@@ -48,23 +51,29 @@ class PaymentProfile extends AuthorizeNet
         return $response;
     }
 
-    /**
-     * @param  array  $source
-     * @return mixed
-     */
-    public function storeInDatabase($response, $source)
+    protected function storeInDatabase(ANetApiResponseType $response, iterable $source): void
     {
-        return \DB::table('user_payment_profiles')->updateOrInsert(
-            [
-                'user_id' => $this->user->id,
-                'payment_profile_id' => $response->getCustomerPaymentProfileId(),
-            ],
-            [
-                'last_4' => $source['last_4'],
-                'expiry_date' => $source['expiry_date'],
-                'brand' => $source['brand'],
-                'type' => $source['type'],
-            ],
-        );
+        DB::beginTransaction();
+
+        try {
+
+            DB::table('user_payment_profiles')->updateOrInsert(
+                [
+                    'user_id' => $this->user->id,
+                    'payment_profile_id' => $response->getCustomerPaymentProfileId(),
+                ],
+                [
+                    'last_4' => $source['last_4'],
+                    'expiry_date' => $source['expiry_date'],
+                    'brand' => $source['brand'],
+                    'type' => $source['type'],
+                ],
+            );
+
+            DB::commit();
+        } catch (Throwable $exception) {
+            DB::rollback();
+        }
+
     }
 }
