@@ -87,7 +87,7 @@ class ANet
         });
     }
 
-    public function charge(int $cents, int $paymentProfileId): PaymentProfileCharge
+    public function charge(int $cents, int $paymentProfileId): CreateTransactionResponse
     {
         return (new PaymentProfileCharge($this->user))->charge($cents, $paymentProfileId);
     }
