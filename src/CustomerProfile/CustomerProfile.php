@@ -3,6 +3,7 @@
 namespace ANet\CustomerProfile;
 
 use ANet\AuthorizeNet;
+use ANet\Events\CustomerProfile\Created;
 use ANet\Exceptions\ANetApiException;
 use ANet\Exceptions\ANetLogicException;
 use Illuminate\Support\Collection;
@@ -32,7 +33,9 @@ class CustomerProfile extends AuthorizeNet
         if (method_exists($response, 'getCustomerProfileId')) {
             $this->persistInDatabase($response->getCustomerProfileId());
         } elseif (isset($response->profile_id) && $response->profile_id) {
-            $this->persistInDatabase($response->profile_id);
+            if ($this->persistInDatabase($response->profile_id)) {
+                Created::dispatch($response->profile_id);
+            }
         }
 
         return $response;
@@ -43,7 +46,13 @@ class CustomerProfile extends AuthorizeNet
      */
     public function get(): Collection
     {
-        $customerId = $this->getCustomerProfileId();
+        $customerId = $this->user->getCustomerProfileId();
+        dd($customerId);
+
+        if (empty($customerId)) {
+            return collect();
+        }
+
         $request = new AnetAPI\GetCustomerProfileRequest();
         $request->setMerchantAuthentication($this->getMerchantAuthentication());
         $request->setCustomerProfileId($customerId);
