@@ -337,3 +337,8 @@ class User extends Model {
 ``` 
 
 ---
+### Changelog
+
+- Throw cutom exceptions when an error occurs during Customer creation instead of exiting with dd()
+- Prevent duplicate payment profiles from being written to the DB
+- Add parameter and return types since PHP8 is standard now
