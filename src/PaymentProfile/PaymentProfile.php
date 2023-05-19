@@ -25,8 +25,8 @@ class PaymentProfile extends AuthorizeNet
         // https://github.com/AuthorizeNet/sample-code-php/blob/master/CustomerProfiles/create-customer-payment-profile.php
         // Create the Bill To info for new payment type
         $billto = new AnetAPI\CustomerAddressType();
-        $billto->setFirstName($opaqueData['billingFirstName']);
-        $billto->setLastName($opaqueData['billingLastName']);
+        $billto->setFirstName($this->user->first_name);
+        $billto->setLastName($this->user->last_name);
 
         $customerPaymentProfileType = new AnetAPI\CustomerPaymentProfileType;
         $customerPaymentProfileType->setPayment($paymentType);
@@ -64,7 +64,6 @@ class PaymentProfile extends AuthorizeNet
                 ],
                 [
                     'last_4' => $source['last_4'],
-                    'expiry_date' => $source['expiry_date'],
                     'brand' => $source['brand'],
                     'type' => $source['type'],
                 ],
@@ -73,6 +72,7 @@ class PaymentProfile extends AuthorizeNet
             DB::commit();
         } catch (Throwable $exception) {
             DB::rollback();
+            throw $exception;
         }
 
     }
