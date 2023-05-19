@@ -14,7 +14,7 @@ return new class extends Migration
     public function up()
     {
         Schema::table('user_payment_profiles', function (Blueprint $table) {
-            $table->unique('payment_profile_id');
+            $table->unique(['payment_profile_id']);
         });
     }
 
@@ -26,7 +26,7 @@ return new class extends Migration
     public function down()
     {
         Schema::table('user_payment_profiles', function (Blueprint $table) {
-            $table->dropUnique('payment_profile_id');
+            $table->dropUnique(['payment_profile_id']);
         });
     }
 };
