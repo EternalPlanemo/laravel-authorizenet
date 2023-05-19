@@ -3,7 +3,6 @@
 namespace ANet\PaymentProfile;
 
 use ANet\AuthorizeNet;
-use ANet\Transactions\Transaction;
 use net\authorize\api\contract\v1 as AnetAPI;
 use net\authorize\api\controller as AnetControllers;
 

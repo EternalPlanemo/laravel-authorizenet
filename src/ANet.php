@@ -76,10 +76,7 @@ class ANet
         });
     }
 
-    /**
-     * @param  null  $paymentProfileId
-     */
-    public function charge($cents, $paymentProfileId)
+    public function charge(int $cents, int $paymentProfileId): PaymentProfileCharge
     {
         return (new PaymentProfileCharge($this->user))->charge($cents, $paymentProfileId);
     }
