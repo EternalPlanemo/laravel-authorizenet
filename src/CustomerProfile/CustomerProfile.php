@@ -45,7 +45,7 @@ class CustomerProfile extends AuthorizeNet
     protected function handleCreateCustomerResponse(AnetAPI\CreateCustomerProfileResponse $response)
     {
         if (is_null($response->getCustomerProfileId())) {
-            if (app()->environment() == 'local') {
+            if (config('authorizenet.env') == 'local') {
                 throw new ANetApiException($response);
             }
 

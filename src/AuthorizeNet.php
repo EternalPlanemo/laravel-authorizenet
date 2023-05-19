@@ -161,7 +161,7 @@ abstract class AuthorizeNet
      */
     public function execute($controller)
     {
-        $env = config('app.env');
+        $env = config('authorizenet.env');
         if ($env == 'production') {
             return $controller->executeWithApiResponse(ANetEnvironment::PRODUCTION);
         }
@@ -176,7 +176,7 @@ abstract class AuthorizeNet
 
     public function getANetEnv()
     {
-        $env = config('app.env');
+        $env = config('authorizenet.env');
         if ($env == 'production') {
             return ANetEnvironment::PRODUCTION;
         }

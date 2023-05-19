@@ -93,11 +93,11 @@ class AuthorizeNetTest extends BaseTestCase
     public function test_if_Anet_env_is_returned_sandbox_for_local_and_testing()
     {
 
-        config(['app.env' => 'local']);
+        config(['authorizenet.env' => 'local']);
         $anetEnv = $this->authorizenet->getANetEnv();
         $this->assertEquals(ANetEnvironment::SANDBOX, $anetEnv);
 
-        config(['app.env' => 'testing']);
+        config(['authorizenet.env' => 'testing']);
         $anetEnv = $this->authorizenet->getANetEnv();
         $this->assertEquals(ANetEnvironment::SANDBOX, $anetEnv);
 
@@ -105,7 +105,7 @@ class AuthorizeNetTest extends BaseTestCase
 
     public function test_if_anet_env_is_returning_production_link_for_prod_env()
     {
-        config(['app.env' => 'prod']);
+        config(['authorizenet.env' => 'prod']);
         $anetEnv = $this->authorizenet->getANetEnv();
         $this->assertEquals(ANetEnvironment::PRODUCTION, $anetEnv);
     }

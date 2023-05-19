@@ -10,7 +10,7 @@ abstract class BaseTestCase extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        config(['app.env' => 'testing']);
+        config(['authorizenet.env' => 'testing']);
     }
 
     /**
