@@ -11,7 +11,7 @@ use Throwable;
 
 class PaymentProfile extends AuthorizeNet
 {
-    public function create($opaqueData, array $source)
+    public function create(array $opaqueData, array $source)
     {
         $merchantKeys = $this->getMerchantAuthentication();
 

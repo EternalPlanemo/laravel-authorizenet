@@ -47,7 +47,6 @@ class CustomerProfile extends AuthorizeNet
     public function get(): Collection
     {
         $customerId = $this->user->getCustomerProfileId();
-        dd($customerId);
 
         if (empty($customerId)) {
             return collect();
