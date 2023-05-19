@@ -10,7 +10,7 @@ class Created
     use Dispatchable, InteractsWithSockets;
 
     public function __construct(
-        protected int $id,
+        public int $id,
     ) {
         //
     }
