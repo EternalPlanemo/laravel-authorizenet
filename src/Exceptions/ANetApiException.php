@@ -2,11 +2,10 @@
 
 namespace ANet\Exceptions;
 
-use Exception;
 use net\authorize\api\contract\v1\ANetApiResponseType;
 use Throwable;
 
-class ANetApiException extends Exception
+class ANetApiException extends ANetException
 {
     public function __construct(ANetApiResponseType $response, int $code = 0, Throwable $previous = null)
     {

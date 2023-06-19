@@ -2,8 +2,6 @@
 
 namespace ANet\Exceptions;
 
-use Exception;
-
-class ANetLogicException extends Exception
+class ANetLogicException extends ANetException
 {
 }

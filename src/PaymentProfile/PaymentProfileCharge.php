@@ -3,9 +3,17 @@
 namespace ANet\PaymentProfile;
 
 use ANet\AuthorizeNet;
+use ANet\Exceptions\ANetLogicException;
+use ANet\Exceptions\ANetTransactionException;
 use net\authorize\api\contract\v1 as AnetAPI;
 use net\authorize\api\controller as AnetControllers;
+use net\authorize\api\contract\v1\CreateTransactionResponse;
+use net\authorize\api\contract\v1\TransactionResponseType;
 
+/**
+ * @throws ANetLogicException
+ * @throws ANetTransactionException
+ */
 class PaymentProfileCharge extends AuthorizeNet
 {
     public function charge(int $cents, int $paymentProfileId)
@@ -33,6 +41,23 @@ class PaymentProfileCharge extends AuthorizeNet
         $request->setTransactionRequest($transactionRequestType);
         $controller = new AnetControllers\CreateTransactionController($request);
 
-        return $this->execute($controller);
+        /** @var CreateTransactionResponse $response */
+        $response = $this->execute($controller);
+
+        /** @var TransactionResponseType $transaction */
+        $transaction = $response->getTransactionResponse();
+
+        if (empty($response) || empty($transaction)) {
+            throw new ANetLogicException('Transaction Failed.');
+        }
+
+        $success = $response->getMessages()->getResultCode() === 'Ok'
+            && empty($response->getTransactionResponse()->getErrors());
+
+        if (! $success) {
+            throw new ANetTransactionException($response);
+        }
+
+        return $response;
     }
 }
