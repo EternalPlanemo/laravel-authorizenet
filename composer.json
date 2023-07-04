@@ -7,8 +7,8 @@
     },
     "require-dev": {
         "phpunit/phpunit": "^8.0",
-        "laravel/pint": "dev-main",
-        "laravel/framework": "10.x-dev"
+        "laravel/pint": "*",
+        "laravel/framework": "^10.0"
     },
     "license": "MIT",
     "authors": [
