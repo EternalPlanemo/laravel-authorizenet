@@ -6,9 +6,9 @@ use ANet\AuthorizeNet;
 use ANet\Exceptions\ANetLogicException;
 use ANet\Exceptions\ANetTransactionException;
 use net\authorize\api\contract\v1 as AnetAPI;
-use net\authorize\api\controller as AnetControllers;
 use net\authorize\api\contract\v1\CreateTransactionResponse;
 use net\authorize\api\contract\v1\TransactionResponseType;
+use net\authorize\api\controller as AnetControllers;
 
 /**
  * @throws ANetLogicException
@@ -16,13 +16,15 @@ use net\authorize\api\contract\v1\TransactionResponseType;
  */
 class PaymentProfileCharge extends AuthorizeNet
 {
-    public function charge(int $cents, int $paymentProfileId)
+    public function charge(int $cents, int|string $paymentProfileId)
     {
         $amount = $this->convertCentsToDollar($cents);
+        $customerId = (string) $this->user->getCustomerProfileId();
+        $paymentProfileId = (string) $paymentProfileId;
 
         // Set the transaction's refId
         $profileToCharge = new AnetAPI\CustomerProfilePaymentType();
-        $profileToCharge->setCustomerProfileId($this->user->anet()->getCustomerProfileId());
+        $profileToCharge->setCustomerProfileId($customerId);
 
         $paymentProfile = new AnetAPI\PaymentProfileType();
         $paymentProfile->setPaymentProfileId($paymentProfileId);

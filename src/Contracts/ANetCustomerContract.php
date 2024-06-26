@@ -4,5 +4,7 @@ namespace ANet\Contracts;
 
 interface ANetCustomerContract
 {
-    function getCustomerProfileId(): string|int|null;
+    public function getCustomerProfileId(): string|int|null;
+
+    public function getUserIdForAnet(): int;
 }

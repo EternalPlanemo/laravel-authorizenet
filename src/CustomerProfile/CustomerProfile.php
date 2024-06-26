@@ -4,19 +4,24 @@ namespace ANet\CustomerProfile;
 
 use ANet\AuthorizeNet;
 use ANet\Events\CustomerProfile\Created;
+use ANet\Events\CustomerProfile\Updated;
 use ANet\Exceptions\ANetApiException;
 use ANet\Exceptions\ANetLogicException;
+use DB;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Log;
 use net\authorize\api\contract\v1 as AnetAPI;
+use net\authorize\api\contract\v1\CreateCustomerProfileResponse;
+use net\authorize\api\contract\v1\DeleteCustomerProfileResponse;
+use net\authorize\api\contract\v1\GetCustomerProfileIdsResponse;
+use net\authorize\api\contract\v1\GetCustomerProfileResponse;
 use net\authorize\api\controller as AnetController;
 
 class CustomerProfile extends AuthorizeNet
 {
     /**
-     * it will talk to authorize.net and provide some basic information so, that the user can be charged.
+     * It will talk to authorize.net and provide some basic information so, that the user can be charged.
      *
-     * @param  User  $user
      * @return AnetAPI\ANetApiResponseType
      *
      * @throws \Exception
@@ -28,17 +33,36 @@ class CustomerProfile extends AuthorizeNet
         $controller = new AnetController\CreateCustomerProfileController($request);
 
         $response = $this->execute($controller);
-        $response = $this->handleCreateCustomerResponse($response);
 
-        if (method_exists($response, 'getCustomerProfileId')) {
-            $this->persistInDatabase($response->getCustomerProfileId());
-        } elseif (isset($response->profile_id) && $response->profile_id) {
-            if ($this->persistInDatabase($response->profile_id)) {
-                Created::dispatch($response->profile_id);
-            }
+        /** @var CreateCustomerProfileResponse|object{status: string, profile_id: string} $response */
+        $response = $this->handleCreateCustomerResponse($response);
+        $customerProfileId = $response instanceof CreateCustomerProfileResponse
+            ? $response->getCustomerProfileId()
+            : $response->profile_id;
+
+        if (! empty($customerProfileId)) {
+            $this->persistInDatabase($customerProfileId);
         }
 
         return $response;
+    }
+
+    public function all(): Collection
+    {
+        $merchantKeys = $this->getMerchantAuthentication();
+        $request = new AnetAPI\GetCustomerProfileIdsRequest();
+        $request->setMerchantAuthentication($merchantKeys);
+
+        $controller = new AnetController\GetCustomerProfileIdsController($request);
+
+        /** @var ?GetCustomerProfileIdsResponse $response */
+        $response = $this->execute($controller);
+
+        if ($response != null && $response->getMessages()->getResultCode() == 'Ok') {
+            return collect($response->getIds());
+        } else {
+            throw new ANetApiException($response);
+        }
     }
 
     /**
@@ -66,6 +90,89 @@ class CustomerProfile extends AuthorizeNet
         }
 
         throw new ANetApiException($response);
+    }
+
+    public function getByEmail(string $email): Collection
+    {
+        $merchantKeys = $this->getMerchantAuthentication();
+        // Create the merchant authentication object
+
+        // Create the API request to get all customer profiles
+        $request = new AnetAPI\GetCustomerProfileIdsRequest();
+        $request->setMerchantAuthentication($merchantKeys);
+
+        // Create the controller
+        $controller = new AnetController\GetCustomerProfileIdsController($request);
+
+        // Execute the request
+        /** @var ?GetCustomerProfileIdsResponse $response */
+        $response = $this->execute($controller);
+
+        if ($response != null && $response->getMessages()->getResultCode() == 'Ok') {
+            $profileIds = $response->getIds();
+
+            // Loop through all profile IDs to find the email
+            foreach ($profileIds as $profileId) {
+                // Get the details of each customer profile
+                $profileRequest = new AnetAPI\GetCustomerProfileRequest();
+                $profileRequest->setMerchantAuthentication($merchantKeys);
+                $profileRequest->setCustomerProfileId($profileId);
+
+                $profileController = new AnetController\GetCustomerProfileController($profileRequest);
+                /** @var ?GetCustomerProfileResponse $response */
+                $profileResponse = $this->execute($profileController);
+
+                if ($profileResponse != null && $profileResponse->getMessages()->getResultCode() == 'Ok') {
+                    $profile = $profileResponse->getProfile();
+                    if ($profile->getEmail() == $email) {
+                        // Return profile if email matches
+                        return Collection::wrap($profile);
+                    }
+                } else {
+                    throw new ANetApiException($profileResponse);
+                }
+            }
+
+            // No profile found with the given email
+            return collect();
+        } else {
+            throw new ANetApiException($response);
+        }
+    }
+
+    /**
+     * @throws ANetApiException
+     */
+    public function delete(): void
+    {
+        $customerId = $this->user->getCustomerProfileId();
+
+        if (empty($customerId)) {
+            return;
+        }
+
+        // Create the merchant authentication object
+        $merchantKeys = $this->getMerchantAuthentication();
+
+        // Create the API request
+        $request = new AnetAPI\DeleteCustomerProfileRequest();
+        $request->setMerchantAuthentication($merchantKeys);
+        $request->setCustomerProfileId($customerId);
+
+        // Create the controller
+        $controller = new AnetController\DeleteCustomerProfileController($request);
+
+        // Execute the request
+        /** @var ?DeleteCustomerProfileResponse $response */
+        $response = $this->execute($controller);
+
+        if (empty($response) || $response->getMessages()->getResultCode() !== 'Ok') {
+            throw new ANetApiException($response);
+        }
+
+        DB::table('user_gateway_profiles')
+            ->where('profile_id', $customerId)
+            ->delete();
     }
 
     /**
@@ -104,29 +211,44 @@ class CustomerProfile extends AuthorizeNet
         return $response;
     }
 
-    /**
-     * @param  User  $user
-     */
     protected function persistInDatabase(string $customerProfileId): bool
     {
-        return \DB::table('user_gateway_profiles')->updateOrInsert(
-            [
-                'user_id' => $this->user->id,
-            ],
-            [
-                'profile_id' => $customerProfileId,
-            ],
-        );
+        return DB::transaction(function () use ($customerProfileId) {
+            $profile = DB::table('user_gateway_profiles')
+                ->where('profile_id', $customerProfileId)
+                ->lockForUpdate()
+                ->first();
+
+            if (isset($profile)) {
+                DB::table('user_gateway_profiles')
+                    ->where('id', $profile->id)
+                    ->lockForUpdate()
+                    ->update([
+                        'updated_at' => now(),
+                        'user_id' => $this->user->getUserIdForAnet(),
+                    ]);
+
+                Updated::dispatch($customerProfileId);
+            } else {
+                DB::table('user_gateway_profiles')->insert([[
+                    'created_at' => now(),
+                    'updated_at' => now(),
+                    'user_id' => $this->user->getUserIdForAnet(),
+                    'profile_id' => $customerProfileId,
+                ]]);
+
+                Created::dispatch($customerProfileId);
+            }
+
+            return true;
+        });
     }
 
-    /**
-     * @param  User  $user
-     */
     protected function draftCustomerProfile(): AnetAPI\CustomerProfileType
     {
         $customerProfile = new AnetAPI\CustomerProfileType();
         $customerProfile->setDescription('Customer Profile');
-        $customerProfile->setMerchantCustomerId($this->user->id);
+        $customerProfile->setMerchantCustomerId($this->user->getUserIdForAnet());
         $customerProfile->setEmail($this->user->email);
 
         return $customerProfile;

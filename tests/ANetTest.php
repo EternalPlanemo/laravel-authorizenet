@@ -26,7 +26,7 @@ class ANetTest extends BaseTestCase
         $customerProfile = $user->anet()->createCustomerProfile();
         $this->assertNotNull($customerProfile->getCustomerProfileId());
         $this->assertDatabaseHas('user_gateway_profiles', [
-            'user_id' => $user->id,
+            'user_id' => $user->getUserIdForAnet(),
             'profile_id' => $customerProfile->getCustomerProfileId(),
         ]);
     }
@@ -35,7 +35,7 @@ class ANetTest extends BaseTestCase
     public function it_will_Test_If_get_Customer_Id_method_returns_customer_id_of_the_user()
     {
         $user = $this->generateCustomerId();
-        $gatewayProfile = \DB::table('user_gateway_profiles')->where('user_id', $user->id)->first();
+        $gatewayProfile = \DB::table('user_gateway_profiles')->where('user_id', $user->getUserIdForAnet())->first();
 
         $this->assertEquals($gatewayProfile->profile_id, $user->anet()->getCustomerProfileId());
     }
@@ -62,7 +62,7 @@ class ANetTest extends BaseTestCase
         $this->assertNotNull($paymentProfile->getCustomerPaymentProfileId());
 
         $this->assertDatabaseHas('user_payment_profiles', [
-            'user_id' => $user->id,
+            'user_id' => $user->getUserIdForAnet(),
             'payment_profile_id' => $paymentProfile->getCustomerPaymentProfileId(),
         ]);
     }
@@ -103,7 +103,7 @@ class ANetTest extends BaseTestCase
         $user = $this->getCustomerWithPaymentProfile();
 
         \DB::table('user_payment_profiles')->insert([
-            'user_id' => $user->id,
+            'user_id' => $user->getUserIdForAnet(),
             'payment_profile_id' => '123123123',
             'last_4' => '1111',
             'brand' => 'Visa',
@@ -120,7 +120,7 @@ class ANetTest extends BaseTestCase
         $user = $this->getCustomerWithPaymentProfile();
 
         \DB::table('user_payment_profiles')->insert([
-            'user_id' => $user->id,
+            'user_id' => $user->getUserIdForAnet(),
             'payment_profile_id' => '123123123',
             'last_4' => '1111',
             'brand' => 'Visa',
@@ -137,7 +137,7 @@ class ANetTest extends BaseTestCase
         $user = $this->getCustomerWithPaymentProfile();
 
         \DB::table('user_payment_profiles')->insert([
-            'user_id' => $user->id,
+            'user_id' => $user->getUserIdForAnet(),
             'payment_profile_id' => '123123123',
             'last_4' => '1111',
             'brand' => 'Visa',

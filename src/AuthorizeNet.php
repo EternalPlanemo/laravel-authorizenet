@@ -2,14 +2,15 @@
 
 namespace ANet;
 
+use ANet\Contracts\ANetCustomerContract;
 use Exception;
+use Illuminate\Database\Eloquent\Model;
 use net\authorize\api\constants\ANetEnvironment;
 use net\authorize\api\contract\v1 as AnetAPI;
 
 abstract class AuthorizeNet
 {
-    /** @var AnetAPI\MerchantAuthenticationType */
-    protected $merchantAuthentication;
+    protected ?AnetAPI\MerchantAuthenticationType $merchantAuthentication;
 
     /** @var mixed */
     protected $request;
@@ -17,15 +18,15 @@ abstract class AuthorizeNet
     /** @var string */
     protected $refId;
 
-    /** @var AnetAPI\TransactionRequestType */
-    protected $transactionType;
+    protected ?AnetAPI\TransactionRequestType $transactionType;
 
-    /** @var ANetMock */
-    public $mock;
+    protected $controller;
 
-    public $user;
+    public ?ANetMock $mock;
 
-    public function __construct($user)
+    public Model&ANetCustomerContract $user;
+
+    public function __construct(Model&ANetCustomerContract $user)
     {
         $this->mock = new ANetMock();
         $this->user = $user;
@@ -43,7 +44,7 @@ abstract class AuthorizeNet
         return $this->merchantAuthentication;
     }
 
-    private function _getLoginID()
+    private function _getLoginID(): ?string
     {
         $loginId = config('authorizenet.login_id');
         if (! $loginId) {
@@ -53,7 +54,7 @@ abstract class AuthorizeNet
         return $loginId;
     }
 
-    private function _getTransactionKey()
+    private function _getTransactionKey(): ?string
     {
         $transactionKey = config('authorizenet.transaction_key');
         if (! $transactionKey) {
@@ -63,29 +64,19 @@ abstract class AuthorizeNet
         return $transactionKey;
     }
 
-    /**
-     * @return $this
-     */
-    public function setRequest($requestObject)
+    public function setRequest(mixed $requestObject): self
     {
         $this->request = $requestObject;
 
         return $this;
     }
 
-    /**
-     * @return mixed
-     */
-    public function getRequest()
+    public function getRequest(): mixed
     {
         return $this->request;
     }
 
-    /**
-     * @param  string  $refId
-     * return $this
-     */
-    public function setRefId(string $refId)
+    public function setRefId(string $refId): self
     {
         $this->refId = $refId;
 
@@ -93,19 +84,14 @@ abstract class AuthorizeNet
     }
 
     /**
-     * it will return refId if not provided then time
-     *
-     * @return string
+     * It will return refId if not provided then time
      */
-    public function getRefId()
+    public function getRefId(): string
     {
-        return $this->refId || time();
+        return $this->refId || (string) time();
     }
 
-    /**
-     * @return $this
-     */
-    public function setTransactionType(string $type, int $amount)
+    public function setTransactionType(string $type, int $amount): self
     {
         $this->transactionType = new AnetAPI\TransactionRequestType;
         $this->transactionType->setTransactionType($type);
@@ -114,52 +100,34 @@ abstract class AuthorizeNet
         return $this;
     }
 
-    /**
-     * @return AnetAPI\TransactionRequestType
-     */
-    public function getTransactionType()
+    public function getTransactionType(): AnetAPI\TransactionRequestType
     {
         return $this->transactionType;
     }
 
-    /**
-     * @return string
-     */
-    public function convertCentsToDollar(int $cents)
+    public function convertCentsToDollar(int $cents): string
     {
-        return $cents / 100;
+        return bcdiv((string) $cents, '100', 2);
     }
 
-    /**
-     * @return string
-     */
-    public function convertDollarsToCents($dollars)
+    public function convertDollarsToCents(int|float|string $dollars): string
     {
-        return $dollars * 100;
+        return bcmul((string) $dollars, 100, 2);
     }
 
-    /**
-     * @return $this
-     */
-    public function setController($controller)
+    public function setController(mixed $controller): self
     {
         $this->controller = $controller;
 
         return $this;
     }
 
-    /**
-     * @return mixed
-     */
-    public function getController()
+    public function getController(): mixed
     {
         return $this->controller;
     }
 
-    /**
-     * @return mixed
-     */
-    public function execute($controller)
+    public function execute(mixed $controller): mixed
     {
         $env = config('authorizenet.env');
         if ($env == 'production') {
@@ -169,12 +137,12 @@ abstract class AuthorizeNet
         return $controller->executeWithApiResponse(ANetEnvironment::SANDBOX);
     }
 
-    public function testingResponse($controller)
+    public function testingResponse(mixed $controller): mixed
     {
         return $controller->executeWithApiResponse(ANetEnvironment::SANDBOX);
     }
 
-    public function getANetEnv()
+    public function getANetEnv(): string
     {
         $env = config('authorizenet.env');
         if ($env == 'production') {

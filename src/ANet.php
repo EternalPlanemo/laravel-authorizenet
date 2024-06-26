@@ -2,6 +2,7 @@
 
 namespace ANet;
 
+use ANet\Contracts\ANetCustomerContract;
 use ANet\CustomerProfile\CustomerProfile;
 use ANet\Exceptions\ANetApiException;
 use ANet\PaymentProfile\PaymentProfile;
@@ -11,12 +12,14 @@ use ANet\Transactions\Card;
 use ANet\Transactions\Transactions;
 use DB;
 use Exception;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Collection;
 use net\authorize\api\contract\v1\CreateTransactionResponse;
+use net\authorize\api\contract\v1\CustomerProfileMaskedType;
 
 class ANet
 {
-    protected $user;
+    protected Model&ANetCustomerContract $user;
 
     /** @var ANetMock */
     public $mock;
@@ -24,7 +27,7 @@ class ANet
     /**
      * ANet constructor.
      */
-    public function __construct($user)
+    public function __construct(Model $user)
     {
         $this->user = $user;
         $this->mock = new ANetMock();
@@ -44,13 +47,24 @@ class ANet
     }
 
     /**
+     * @throws ANetApiException
+     */
+    public function deleteCustomerProfile(): void
+    {
+        app(CustomerProfile::class, ['user' => $this->user])->delete();
+    }
+
+    /**
      * Returns a collection of all customer payment profiles
+     *
+     * @return Collection<int, CustomerProfileMaskedType>
      *
      * @throws ANetApiException
      */
     public function getCustomerProfile(): Collection
     {
-        return (new CustomerProfile($this->user))->get();
+        return app(CustomerProfile::class, ['user' => $this->user])->getByEmail($this->user->email)
+            ?? app(CustomerProfile::class, ['user' => $this->user])->get();
     }
 
     /**
@@ -59,7 +73,7 @@ class ANet
     public function getCustomerProfileId()
     {
         $data = DB::table('user_gateway_profiles')
-            ->where('user_id', $this->user->id)
+            ->where('user_id', $this->user->getUserIdForAnet())
             ->first();
 
         return optional($data)->profile_id;
@@ -73,18 +87,9 @@ class ANet
         return (new PaymentProfile($this->user))->create($opaqueData, $source);
     }
 
-    /**
-     * @return mixed
-     */
-    public function getPaymentProfiles()
+    public function getPaymentProfiles(): Collection
     {
-        $data = DB::table('user_payment_profiles')
-            ->where('user_id', $this->user->id)
-            ->get();
-
-        return $data->map(function ($profile) {
-            return $profile->payment_profile_id;
-        });
+        return app(PaymentProfile::class, ['user' => $this->user])->get();
     }
 
     public function charge(int $cents, int $paymentProfileId): CreateTransactionResponse
@@ -105,7 +110,7 @@ class ANet
      */
     public function getPaymentMethods()
     {
-        return DB::table('user_payment_profiles')->where('user_id', $this->user->id)->get();
+        return DB::table('user_payment_profiles')->where('user_id', $this->user->getUserIdForAnet())->get();
     }
 
     /**

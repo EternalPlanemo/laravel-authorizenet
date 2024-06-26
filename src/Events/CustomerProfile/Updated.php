@@ -5,7 +5,7 @@ namespace ANet\Events\CustomerProfile;
 use Illuminate\Broadcasting\InteractsWithSockets;
 use Illuminate\Foundation\Events\Dispatchable;
 
-class Created
+class Updated
 {
     use Dispatchable, InteractsWithSockets;
 

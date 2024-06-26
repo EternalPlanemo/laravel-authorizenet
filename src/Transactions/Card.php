@@ -98,7 +98,7 @@ class Card extends AuthorizeNet implements CardInterface
         // Set the customer's identifying information
         $customerData = new AnetAPI\CustomerDataType();
         $customerData->setType('individual');
-        $customerData->setId($this->user->id);
+        $customerData->setId($this->user->getUserIdForAnet());
         $customerData->setEmail($this->user->email);
 
         // Create a TransactionRequestType object and add the previous objects to it
