@@ -15,6 +15,7 @@ use Exception;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Collection;
 use net\authorize\api\contract\v1\CreateTransactionResponse;
+use net\authorize\api\contract\v1\CustomerAddressType;
 use net\authorize\api\contract\v1\CustomerProfileMaskedType;
 
 class ANet
@@ -82,9 +83,9 @@ class ANet
     /**
      * @return mixed
      */
-    public function createPaymentProfile($opaqueData, array $source)
+    public function createPaymentProfile($opaqueData, array $source, ?CustomerAddressType $address = null)
     {
-        return (new PaymentProfile($this->user))->create($opaqueData, $source);
+        return (new PaymentProfile($this->user))->create($opaqueData, $source, $address);
     }
 
     public function getPaymentProfiles(): Collection
@@ -92,9 +93,9 @@ class ANet
         return app(PaymentProfile::class, ['user' => $this->user])->get();
     }
 
-    public function charge(int $cents, int $paymentProfileId): CreateTransactionResponse
+    public function charge(int $cents, int $paymentProfileId, ?CustomerAddressType $address = null): CreateTransactionResponse
     {
-        return (new PaymentProfileCharge($this->user))->charge($cents, $paymentProfileId);
+        return (new PaymentProfileCharge($this->user))->charge($cents, $paymentProfileId, $address);
     }
 
     /**

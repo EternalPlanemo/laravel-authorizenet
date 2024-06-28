@@ -16,7 +16,7 @@ use net\authorize\api\controller as AnetControllers;
  */
 class PaymentProfileCharge extends AuthorizeNet
 {
-    public function charge(int $cents, int|string $paymentProfileId)
+    public function charge(int $cents, int|string $paymentProfileId, ?AnetAPI\CustomerAddressType $address = null)
     {
         $amount = $this->convertCentsToDollar($cents);
         $customerId = (string) $this->user->getCustomerProfileId();
@@ -36,6 +36,10 @@ class PaymentProfileCharge extends AuthorizeNet
 
         $transactionRequestType->setAmount($amount);
         $transactionRequestType->setProfile($profileToCharge);
+
+        if (isset($address)) {
+            $transactionRequestType->setBillTo($address);
+        }
 
         $request = new AnetAPI\CreateTransactionRequest();
         $request->setMerchantAuthentication($this->getMerchantAuthentication());

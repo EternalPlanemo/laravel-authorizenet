@@ -51,7 +51,7 @@ class PaymentProfile extends AuthorizeNet
         return collect();
     }
 
-    public function create(array $opaqueData, array $source)
+    public function create(array $opaqueData, array $source, ?AnetAPI\CustomerAddressType $address = null)
     {
         $merchantKeys = $this->getMerchantAuthentication();
 
@@ -64,9 +64,9 @@ class PaymentProfile extends AuthorizeNet
 
         // https://github.com/AuthorizeNet/sample-code-php/blob/master/CustomerProfiles/create-customer-payment-profile.php
         // Create the Bill To info for new payment type
-        $billto = new AnetAPI\CustomerAddressType();
-        $billto->setFirstName($this->user->first_name);
-        $billto->setLastName($this->user->last_name);
+        $billto = $address ?? (new AnetAPI\CustomerAddressType())
+            ->setFirstName($this->user->first_name)
+            ->setLastName($this->user->last_name);
 
         $customerPaymentProfileType = new AnetAPI\CustomerPaymentProfileType;
         $customerPaymentProfileType->setPayment($paymentType);
