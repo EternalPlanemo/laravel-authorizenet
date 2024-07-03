@@ -56,16 +56,18 @@ class ANet
     }
 
     /**
-     * Returns a collection of all customer payment profiles
-     *
-     * @return Collection<int, CustomerProfileMaskedType>
-     *
      * @throws ANetApiException
      */
-    public function getCustomerProfile(): Collection
+    public function getCustomerProfile(): ?CustomerProfileMaskedType
     {
-        return app(CustomerProfile::class, ['user' => $this->user])->getByEmail($this->user->email)
-            ?? app(CustomerProfile::class, ['user' => $this->user])->get();
+        $customerId = $this->getCustomerProfileId();
+        $action = app(CustomerProfile::class, ['user' => $this->user]);
+
+        if (isset($customerId)) {
+            return $action->getById($customerId);
+        }
+
+        return $action->get()->first();
     }
 
     /**

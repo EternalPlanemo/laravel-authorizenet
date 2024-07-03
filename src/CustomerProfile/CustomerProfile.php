@@ -12,6 +12,7 @@ use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Log;
 use net\authorize\api\contract\v1 as AnetAPI;
 use net\authorize\api\contract\v1\CreateCustomerProfileResponse;
+use net\authorize\api\contract\v1\CustomerProfileMaskedType;
 use net\authorize\api\contract\v1\DeleteCustomerProfileResponse;
 use net\authorize\api\contract\v1\GetCustomerProfileIdsResponse;
 use net\authorize\api\contract\v1\GetCustomerProfileResponse;
@@ -80,7 +81,8 @@ class CustomerProfile extends AuthorizeNet
         $request->setMerchantAuthentication($this->getMerchantAuthentication());
         $request->setCustomerProfileId($customerId);
         $controller = new AnetController\GetCustomerProfileController($request);
-        $response = $controller->executeWithApiResponse($this->getANetEnv());
+        /** @var ?GetCustomerProfileResponse $response */
+        $response = $this->execute($controller);
 
         if (($response != null) && ($response->getMessages()->getResultCode() == 'Ok')) {
             $profileSelected = $response->getProfile();
@@ -138,6 +140,30 @@ class CustomerProfile extends AuthorizeNet
         } else {
             throw new ANetApiException($response);
         }
+    }
+
+    /**
+     * @throws ANetApiException
+     */
+    public function getById(string $customerId): CustomerProfileMaskedType
+    {
+        $merchantKeys = $this->getMerchantAuthentication();
+
+        $request = new AnetAPI\GetCustomerProfileRequest();
+        $request->setMerchantAuthentication($merchantKeys);
+        $request->setCustomerProfileId($customerId);
+
+        $controller = new AnetController\GetCustomerProfileController($request);
+        /** @var ?GetCustomerProfileResponse $response */
+        $response = $this->execute($controller);
+
+        if ($response != null && $response->getMessages()->getResultCode() == 'Ok') {
+            $profile = $response->getProfile();
+
+            return $profile;
+        }
+
+        throw new ANetApiException($response);
     }
 
     /**
@@ -213,35 +239,33 @@ class CustomerProfile extends AuthorizeNet
 
     protected function persistInDatabase(string $customerProfileId): bool
     {
-        return DB::transaction(function () use ($customerProfileId) {
-            $profile = DB::table('user_gateway_profiles')
-                ->where('profile_id', $customerProfileId)
+        $profile = DB::table('user_gateway_profiles')
+            ->where('profile_id', $customerProfileId)
+            ->lockForUpdate()
+            ->first();
+
+        if (isset($profile)) {
+            DB::table('user_gateway_profiles')
+                ->where('id', $profile->id)
                 ->lockForUpdate()
-                ->first();
-
-            if (isset($profile)) {
-                DB::table('user_gateway_profiles')
-                    ->where('id', $profile->id)
-                    ->lockForUpdate()
-                    ->update([
-                        'updated_at' => now(),
-                        'user_id' => $this->user->getUserIdForAnet(),
-                    ]);
-
-                Updated::dispatch($customerProfileId);
-            } else {
-                DB::table('user_gateway_profiles')->insert([[
-                    'created_at' => now(),
+                ->update([
                     'updated_at' => now(),
                     'user_id' => $this->user->getUserIdForAnet(),
-                    'profile_id' => $customerProfileId,
-                ]]);
+                ]);
 
-                Created::dispatch($customerProfileId);
-            }
+            Updated::dispatch($customerProfileId);
+        } else {
+            DB::table('user_gateway_profiles')->insert([[
+                'created_at' => now(),
+                'updated_at' => now(),
+                'user_id' => $this->user->getUserIdForAnet(),
+                'profile_id' => $customerProfileId,
+            ]]);
 
-            return true;
-        });
+            Created::dispatch($customerProfileId);
+        }
+
+        return true;
     }
 
     protected function draftCustomerProfile(): AnetAPI\CustomerProfileType
