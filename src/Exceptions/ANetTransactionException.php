@@ -8,7 +8,7 @@ use Throwable;
 
 class ANetTransactionException extends ANetException
 {
-    public function __construct(CreateTransactionResponse $response, int $code = 0, Throwable $previous = null)
+    public function __construct(CreateTransactionResponse $response, int $code = 0, ?Throwable $previous = null)
     {
         $transaction = $response->getTransactionResponse();
 
@@ -22,7 +22,7 @@ class ANetTransactionException extends ANetException
                 default => $error->getErrorText(),
             };
 
-            return "[Error {$error->getErrorCode()}] {$message}";
+            return $message;
         })->join("\n");
 
         $message = empty($message)
