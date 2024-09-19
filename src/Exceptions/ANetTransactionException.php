@@ -3,20 +3,18 @@
 namespace ANet\Exceptions;
 
 use net\authorize\api\contract\v1\CreateTransactionResponse;
-use net\authorize\api\contract\v1\MessagesType\MessageAType;
 use Throwable;
+use net\authorize\api\contract\v1\TransactionResponseType\ErrorsAType\ErrorAType;
 
 class ANetTransactionException extends ANetException
 {
-    public function __construct(CreateTransactionResponse $response, int $code = 0, ?Throwable $previous = null)
+    public function __construct(public CreateTransactionResponse $response, int $code = 0, ?Throwable $previous = null)
     {
-        $transaction = $response->getTransactionResponse();
+        $errors = $response->getTransactionResponse()
+            ?->getErrors()
+            ?? [];
 
-        $errors = collect($response->getMessages()->getMessage())
-            ->map(fn (MessageAType $error) => $error->getText())
-            ->join("\n");
-
-        $message = collect($transaction->getErrors() ?? [])->map(function ($error) {
+        $message = collect($errors)->map(function (ErrorAType $error) {
             $message = match (intval($error->getErrorCode())) {
                 11 => 'A duplicate transaction has been submitted. Please wait 2 minutes.',
                 default => $error->getErrorText(),
@@ -26,8 +24,8 @@ class ANetTransactionException extends ANetException
         })->join("\n");
 
         $message = empty($message)
-            ? $errors
-            : $message."\n".$errors;
+            ? 'Transaction failed for an unknown reason.'
+            : $message;
 
         parent::__construct($message, $code, $previous);
     }

@@ -231,7 +231,7 @@ class CustomerProfile extends AuthorizeNet
                 return $response;
             }
 
-            throw new ANetLogicException('Failed, To create customer profile.');
+            throw new ANetLogicException('Failed to create customer profile.');
         }
 
         return $response;
