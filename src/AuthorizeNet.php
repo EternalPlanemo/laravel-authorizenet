@@ -88,7 +88,7 @@ abstract class AuthorizeNet
      */
     public function getRefId(): string
     {
-        return $this->refId || (string) time();
+        return (string) time();
     }
 
     public function setTransactionType(string $type, int $amount): self
